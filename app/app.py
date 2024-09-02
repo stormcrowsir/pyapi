@@ -1,7 +1,6 @@
 from typing import Annotated
 import os
 from dotenv import load_dotenv
-import bcrypt 
 from fastapi import Depends, FastAPI
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
