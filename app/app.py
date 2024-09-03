@@ -4,7 +4,10 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-app = FastAPI()
+app = FastAPI(
+    version=0.1,
+    root_path="/pyapi/v1"
+)
 load_dotenv()
 security = HTTPBasic()
 
