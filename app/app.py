@@ -6,7 +6,6 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI(
     version=0.1,
-    root_path="/pyapi/v1",
     docs_url='/docs',
     openapi_url='/openapi.json', # This line solved my issue, in my case it was a lambda function
     redoc_url=None
