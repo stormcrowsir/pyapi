@@ -11,13 +11,14 @@ from langchain_community.llms import HuggingFaceEndpoint
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 import json
+from fastapi.middleware.cors import CORSMiddleware
+
 from helper.youtube_helper import fetch_youtube
 from helper.udemy_helper import fetch_udemy
 from helper.oreilly_helper import fetch_oreilly
+from helper.embed_helper import store_and_embed,search_db
+from helper.extract_helper import extract_info
 
-dataset_path = 'hub://josuasirustara/education2'
-
-chat_history = []
 repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
 
 
@@ -30,29 +31,13 @@ prefix_router = APIRouter(prefix="/api/v1")
 
 # Add the paths to the router instead
 
-QA = None
-
-def search_db():
-    global QA
-
-    if QA is None:
-        embeddings = SpacyEmbeddings()
-        # print(embeddings.embed_query)
-        db = DeepLake(dataset_path=dataset_path, read_only=True, embedding=embeddings)
-        # print(db)
-        retriever = db.as_retriever()
-        retriever.search_kwargs['distance_metric'] = 'cos'
-        retriever.search_kwargs['fetch_k'] = 100
-        # retriever.search_kwargs['maximal_marginal_relevance'] = True
-        retriever.search_kwargs['k'] = 10
-        # model = OpenAI(temperature=0.0, max_tokens=-1)
-
-        llm = HuggingFaceEndpoint(
-            repo_id=repo_id, max_length=128, temperature=0.5
-        )
-        QA = ConversationalRetrievalChain.from_llm(llm, retriever=retriever, return_source_documents=True)
-
-    return QA
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 class SearchRequest(BaseModel):
     query: str
@@ -62,10 +47,32 @@ def search_youtube(request: SearchRequest):
     return fetch_youtube(request.query)
 
 
+@prefix_router.post("/embed_youtube")
+def embed_youtube(request: SearchRequest):
+    res = fetch_youtube(request.query)
+    texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
+    return store_and_embed(texts)
+
+@prefix_router.post("/get_db_embedding")
+def search_db_embedding(prompt: SearchRequest):
+    chat_history = []
+
+    qa = search_db()
+    result = qa({'question': prompt.query, "chat_history": chat_history})
+
+    return result['source_documents'] + "\nans : "+result['answer']
+
+# def search_youtube(request: SearchRequest):
+#     return fe(request.query)
+
 @prefix_router.post("/search_udemy")
 def search_udemy(request: SearchRequest):
     return fetch_udemy(request.query)
 
+
+@prefix_router.post("/extract")
+def extract_requirement(request: SearchRequest):
+    return extract_info(request.query)
 
 @prefix_router.post("/search_oreilly")
 def search_oreilly(request: SearchRequest):
