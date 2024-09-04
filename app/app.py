@@ -23,6 +23,7 @@ repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
 
 
 app = FastAPI(
+    openapi_prefix='/py'
     )
 
 load_dotenv()
