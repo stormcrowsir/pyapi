@@ -1,15 +1,10 @@
 import os
 from dotenv import load_dotenv
-from fastapi import Depends, APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from langchain_community.embeddings.spacy_embeddings import SpacyEmbeddings
-from langchain.vectorstores import DeepLake
-from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 from pydantic import BaseModel
-from langchain_community.llms import HuggingFaceEndpoint
-from langchain.chains import LLMChain
-from langchain_core.prompts import PromptTemplate
-import json
+from fastapi.middleware.cors import CORSMiddleware
+
 
 from helper.youtube_helper import fetch_youtube
 from helper.udemy_helper import fetch_udemy
@@ -21,7 +16,7 @@ repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
 
 
 app = FastAPI(
-    openapi_prefix='/py'
+        openapi_prefix='/py'
     )
 
 load_dotenv()
@@ -30,13 +25,13 @@ prefix_router = APIRouter(prefix="/api/v1")
 
 # Add the paths to the router instead
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"]
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 class SearchRequest(BaseModel):
     query: str
@@ -52,14 +47,14 @@ def search_youtube(request: SearchRequest):
 #     texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
 #     return store_and_embed(texts)
 
-# @prefix_router.post("/get_db_embedding")
-# def search_db_embedding(prompt: SearchRequest):
-#     chat_history = []
+@prefix_router.post("/get_db_embedding")
+def search_db_embedding(prompt: SearchRequest):
+    chat_history = []
+    return 'on progress'
+    # qa = search_db()
+    # result = qa({'question': prompt.query, "chat_history": chat_history})
 
-#     qa = search_db()
-#     result = qa({'question': prompt.query, "chat_history": chat_history})
-
-#     return result['source_documents'] + "\nans : "+result['answer']
+    # return result['source_documents'] + "\nans : "+result['answer']
 
 # def search_youtube(request: SearchRequest):
 #     return fe(request.query)
