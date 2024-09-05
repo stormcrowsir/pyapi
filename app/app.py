@@ -1,4 +1,3 @@
-from typing import Annotated
 import os
 from dotenv import load_dotenv
 from fastapi import Depends, APIRouter, FastAPI, HTTPException
@@ -11,7 +10,6 @@ from langchain_community.llms import HuggingFaceEndpoint
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 import json
-from fastapi.middleware.cors import CORSMiddleware
 
 from helper.youtube_helper import fetch_youtube
 from helper.udemy_helper import fetch_udemy
