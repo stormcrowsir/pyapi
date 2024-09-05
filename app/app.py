@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from helper.youtube_helper import fetch_youtube
 from helper.udemy_helper import fetch_udemy
 from helper.oreilly_helper import fetch_oreilly
-# from helper.embed_helper import store_and_embed,search_db
+from helper.embed_helper import generate_learning_path,store_and_embed
 from helper.extract_helper import extract_info
 
 repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
@@ -41,20 +41,16 @@ def search_youtube(request: SearchRequest):
     return fetch_youtube(request.query)
 
 
-# @prefix_router.post("/embed_youtube")
-# def embed_youtube(request: SearchRequest):
-#     res = fetch_youtube(request.query)
-#     texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
-#     return store_and_embed(texts)
+@prefix_router.post("/embed_youtube")
+def embed_youtube(request: SearchRequest):
+    res = fetch_youtube(request.query)
+    texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
+    return store_and_embed(texts)
 
-@prefix_router.post("/get_db_embedding")
+@prefix_router.post("/path")
 def search_db_embedding(prompt: SearchRequest):
-    chat_history = []
-    return 'on progress'
-    # qa = search_db()
-    # result = qa({'question': prompt.query, "chat_history": chat_history})
-
-    # return result['source_documents'] + "\nans : "+result['answer']
+    learning_path = generate_learning_path(prompt.query)
+    return learning_path
 
 # def search_youtube(request: SearchRequest):
 #     return fe(request.query)
