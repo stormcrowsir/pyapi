@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from helper.youtube_helper import fetch_youtube
 from helper.udemy_helper import fetch_udemy
 from helper.oreilly_helper import fetch_oreilly
-from helper.embed_helper import generate_learning_path,store_and_embed
+from helper.embed_helper import generate_learning_path
 from helper.extract_helper import extract_info
 
 repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
@@ -36,20 +36,25 @@ app.add_middleware(
 class SearchRequest(BaseModel):
     query: str
 
+class GeneratePathRequest(BaseModel):
+    topic: str
+    description: str
+    pathid: str
+
 @prefix_router.post("/search_youtube")
 def search_youtube(request: SearchRequest):
     return fetch_youtube(request.query)
 
 
-@prefix_router.post("/embed_youtube")
-def embed_youtube(request: SearchRequest):
-    res = fetch_youtube(request.query)
-    texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
-    return store_and_embed(texts)
+# @prefix_router.post("/embed_youtube")
+# def embed_youtube(request: SearchRequest):
+#     res = fetch_youtube(request.query)
+#     texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
+#     return store_and_embed(texts)
 
 @prefix_router.post("/path")
-def search_db_embedding(prompt: SearchRequest):
-    learning_path = generate_learning_path(prompt.query)
+def search_db_embedding(request: GeneratePathRequest):
+    learning_path = generate_learning_path(request.topic,request.description,request.pathid)
     return learning_path
 
 # def search_youtube(request: SearchRequest):
