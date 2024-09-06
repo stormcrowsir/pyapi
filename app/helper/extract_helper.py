@@ -1,6 +1,5 @@
 from langchain.chains import LLMChain,ConversationalRetrievalChain
 from langchain_core.prompts import PromptTemplate
-from langchain_aws import BedrockLLM
 from langchain_google_vertexai import VertexAI
 import json
 
