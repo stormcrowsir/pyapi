@@ -1,6 +1,7 @@
 from langchain.chains import LLMChain,ConversationalRetrievalChain
 from langchain_core.prompts import PromptTemplate
 from langchain_aws import BedrockLLM
+from langchain_google_vertexai import VertexAI
 import json
 
 model_id = "mistral.mistral-7b-instruct-v0:2"
@@ -30,16 +31,16 @@ def extract_info(texts):
 
     Based on the previous given list of technicall skill pick 1 in each category which corespond to the job post given : {question}
     
-    Please answer in this format [Number]. [Skill Name], do not repeat yourself."""
+    you can only answer based on the category, do not say anything else other than category
+    
+    Do not invent new category, do not repeat yourself."""
     
     prompt = PromptTemplate(template=template, input_variables=["question"])
     # llm = HuggingFaceEndpoint(
     #         repo_id=repo_id, max_length=512
     #         # , temperature=0.5
     #     )
-    llm = BedrockLLM(
-        model_id=model_id, region_name='ap-southeast-2'
-    )
+    llm = VertexAI(model_name="gemini-pro")
     qaa = LLMChain(prompt=prompt, llm=llm)
     result = qaa.run(str(texts))
 

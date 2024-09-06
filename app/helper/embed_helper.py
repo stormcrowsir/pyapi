@@ -1,16 +1,17 @@
 from langchain.chains import ConversationalRetrievalChain
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.vectorstores import DeepLake
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.chat_models import BedrockChat
 from langchain.chains import ConversationalRetrievalChain
+from langchain_google_vertexai import VertexAIEmbeddings,VertexAI
+
+
 import json
 import os
 
-dataset_path = 'hub://josuasirustara/education3'
-embedding_id = "sentence-transformers/all-MiniLM-L6-v2"
-repo_id = "HuggingFaceTB/SmolLM-135M"
-model_id = "mistral.mistral-7b-instruct-v0:2"
+dataset_path = 'hub://josuasirustara/education5'
+# embedding_id = "sentence-transformers/all-MiniLM-L6-v2"
+# repo_id = "HuggingFaceTB/SmolLM-135M"
+# model_id = "mistral.mistral-7b-instruct-v0:2"
 
 QA = None
 #Mean Pooling - Take attention mask into account for correct averaging
@@ -38,31 +39,32 @@ QA = None
 #     return sentence_embeddings
 
 
-# def store_and_embed(texts, chunk_size=1000):
-#     # texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
+def store_and_embed(contents, chunk_size=1000):
+    # Initialize DeepLake vector store
+    embeddings = VertexAIEmbeddings(model_name="text-embedding-004")
+    vector_store = DeepLake(dataset_path=dataset_path, embedding_function=embeddings)
 
-#     vector_store = VectorStore(
-#         path=dataset_path,
-#     )
-
-#     for t in texts:
-#         chunked_text = [t[i:i+1000] for i in range(0, len(t), chunk_size)]
-
-#         vector_store.add(text=chunked_text,
-#                          embedding_function=embedding_function,
-#                          embedding_data=chunked_text,
-#                          metadata=[{"source": t}]*len(chunked_text))
+    for s, t in contents.items():
+        chunked_text = [t[i:i+chunk_size] for i in range(0, len(t), chunk_size)]
         
-#     return { 
-#             'message':'success', 
-#             'status':200 
-#             }
+        # Add documents to the vector store
+        vector_store.add_texts(
+            texts=chunked_text,
+            metadatas=[{"source": s} for _ in range(len(chunked_text))]
+        )
+
+    return {
+        'message': 'success',
+        'status': 200
+    }
 
 def search_db():
     global QA
 
     if QA is None:
-        embeddings = HuggingFaceEmbeddings(model_name=embedding_id)
+        # embeddings = BedrockEmbeddings(model_id=model_id)
+        # Initialize the a specific Embeddings Model version
+        embeddings = VertexAIEmbeddings(model_name="text-embedding-004")
         db = DeepLake(dataset_path=dataset_path, read_only=True, embedding=embeddings)
         retriever = db.as_retriever()
         retriever.search_kwargs['distance_metric'] = 'cos'
@@ -72,10 +74,7 @@ def search_db():
         # llm = HuggingFaceEndpoint(
         #     repo_id=repo_id, max_length=128, temperature=0.5
         # )
-        llm = BedrockChat(
-            model_id=model_id,
-            model_kwargs={'temperature': 0.5}
-        )
+        llm = VertexAI(model_name="gemini-pro")
 
         # QA_PROMPT = new PromptTemplate({
         # template:

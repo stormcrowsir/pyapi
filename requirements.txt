@@ -3,5 +3,5 @@ pydantic
 python-dotenv
 langchain_community
 google-api-python-client
-langchain_aws
+langchain-google-vertexai
 deeplake
