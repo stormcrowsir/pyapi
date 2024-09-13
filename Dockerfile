@@ -1,6 +1,6 @@
 FROM python:3.9-alpine
 
-RUN apk add gcc geos-dev
+RUN apk add gcc python3-dev musl-dev linux-headers geos-dev
 
 WORKDIR /code
 
