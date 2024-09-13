@@ -1,77 +1,77 @@
-from serpapi import GoogleSearch
-import os
+# from serpapi import GoogleSearch
+# import os
 
-import requests
-from bs4 import BeautifulSoup
-import re
+# import requests
+# from bs4 import BeautifulSoup
+# import re
 
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_community.vectorstores import DeepLake
-import os
-from deeplake.core.vectorstore import VectorStore
+# from langchain_community.embeddings import OpenAIEmbeddings
+# from langchain_community.vectorstores import DeepLake
+# import os
+# from deeplake.core.vectorstore import VectorStore
 
-import openai
-
-
-def search_news():
-    search = GoogleSearch({
-        "engine": "google",
-        "q": "Berita beasiswa terkini penyakit",
-        "location_requested": "Indonesia",
-        "location_used": "Indonesia",
-        "google_domain": "google.co.id",
-        "hl": "id",
-        "gl": "id",
-        "device": "desktop",
-        "tbm": "nws",
-        "num": "10",
-        "api_key": os.getenv("SERP_API_KEY")
-    })
-
-    result = search.get_dict()
-
-    return result
+# import openai
 
 
-def embedding_function(texts, model="text-embedding-ada-002"):
-    if isinstance(texts, str):
-        texts = [texts]
+# def search_news():
+#     search = GoogleSearch({
+#         "engine": "google",
+#         "q": "Berita beasiswa terkini penyakit",
+#         "location_requested": "Indonesia",
+#         "location_used": "Indonesia",
+#         "google_domain": "google.co.id",
+#         "hl": "id",
+#         "gl": "id",
+#         "device": "desktop",
+#         "tbm": "nws",
+#         "num": "10",
+#         "api_key": os.getenv("SERP_API_KEY")
+#     })
 
-    texts = [t.replace("\n", " ") for t in texts]
-    return [data['embedding']for data in openai.Embedding.create(input=texts, model=model)['data']]
+#     result = search.get_dict()
 
-
-def get_news_content():
-    res = search_news()
-
-    links = [x["link"] for x in res["news_results"]]
-
-    contents = dict()
-    for l in links:
-        r = requests.get(l)
-
-        if r.status_code != 200:
-            continue
-
-        soup = BeautifulSoup(r.content, 'html.parser')
-        text = re.sub(r'\s+', ' ', soup.text.replace("\n", " "))
-
-        contents[l] = text
-
-    return contents
+#     return result
 
 
-def store_and_embed_news(contents, chunk_size=1000):
-    dataset_path = 'hub://josuasirustara/education2'
-    vector_store = VectorStore(
-        path=dataset_path,
-    )
+# def embedding_function(texts, model="text-embedding-ada-002"):
+#     if isinstance(texts, str):
+#         texts = [texts]
 
-    for s, c in contents.items():
-        chunked_text = [c[i:i+1000] for i in range(0, len(c), chunk_size)]
+#     texts = [t.replace("\n", " ") for t in texts]
+#     return [data['embedding']for data in openai.Embedding.create(input=texts, model=model)['data']]
 
-        print(s)
-        vector_store.add(text=chunked_text,
-                         embedding_function=embedding_function,
-                         embedding_data=chunked_text,
-                         metadata=[{"source": s}]*len(chunked_text))
+
+# def get_news_content():
+#     res = search_news()
+
+#     links = [x["link"] for x in res["news_results"]]
+
+#     contents = dict()
+#     for l in links:
+#         r = requests.get(l)
+
+#         if r.status_code != 200:
+#             continue
+
+#         soup = BeautifulSoup(r.content, 'html.parser')
+#         text = re.sub(r'\s+', ' ', soup.text.replace("\n", " "))
+
+#         contents[l] = text
+
+#     return contents
+
+
+# def store_and_embed_news(contents, chunk_size=1000):
+#     dataset_path = 'hub://josuasirustara/education2'
+#     vector_store = VectorStore(
+#         path=dataset_path,
+#     )
+
+#     for s, c in contents.items():
+#         chunked_text = [c[i:i+1000] for i in range(0, len(c), chunk_size)]
+
+#         print(s)
+#         vector_store.add(text=chunked_text,
+#                          embedding_function=embedding_function,
+#                          embedding_data=chunked_text,
+#                          metadata=[{"source": s}]*len(chunked_text))

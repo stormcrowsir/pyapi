@@ -4,4 +4,4 @@ python-dotenv
 langchain_community
 google-api-python-client
 langchain-google-vertexai
-deeplake
+# deeplake

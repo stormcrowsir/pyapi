@@ -17,8 +17,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(f'{BASE_DIR}/../.env')
 API_KEY = os.getenv("YOUTUBE_API_KEY")
 
-if not API_KEY:
-    raise ValueError("YOUTUBE_API_KEY environment variable is not set")
+# if not API_KEY:
+#     raise ValueError("YOUTUBE_API_KEY environment variable is not set")
 
 youtube = build("youtube", "v3", developerKey=API_KEY)
 

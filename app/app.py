@@ -9,8 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from helper.youtube_helper import fetch_youtube
 from helper.udemy_helper import fetch_udemy
 from helper.oreilly_helper import fetch_oreilly
-from helper.embed_helper import generate_learning_path
+# from helper.embed_helper import generate_learning_path
 from helper.extract_helper import extract_info
+from helper.schedule_helper import summarize_schedule
+
 
 repo_id = "mistralai/Mistral-7B-Instruct-v0.2"
 
@@ -41,6 +43,10 @@ class GeneratePathRequest(BaseModel):
     description: str
     pathid: str
 
+class ScheduleSummarizeRequest(SearchRequest):
+    schedule: str
+   
+
 @prefix_router.post("/search_youtube")
 def search_youtube(request: SearchRequest):
     return fetch_youtube(request.query)
@@ -52,10 +58,15 @@ def search_youtube(request: SearchRequest):
 #     texts = [x["title"] + ' ' + x['description'] + ' Published at ' +x['published_at'] for x in res["videos"]]
 #     return store_and_embed(texts)
 
-@prefix_router.post("/path")
-def search_db_embedding(request: GeneratePathRequest):
-    learning_path = generate_learning_path(request.topic,request.description,request.pathid)
-    return learning_path
+# @prefix_router.post("/path")
+# def search_db_embedding(request: GeneratePathRequest):
+#     learning_path = generate_learning_path(request.topic,request.description,request.pathid)
+#     return learning_path
+
+@prefix_router.post("/schedule")
+def summarize_schedule_endpoint(request: ScheduleSummarizeRequest):
+    summary = summarize_schedule(request.schedule,request.query)
+    return summary
 
 # def search_youtube(request: SearchRequest):
 #     return fe(request.query)
